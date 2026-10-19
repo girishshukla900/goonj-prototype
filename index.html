@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Goonj — India-first Creator Platform (Prototype)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Azeret+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fbf7f2; --surface:#ffffff; --surface-2:#f3ece3; --surface-3:#ece3d7;
+  --border:rgba(20,15,10,0.10); --text:#1a1410; --text-dim:#6f6558;
+  --saffron:#dd7a1a; --saffron-dim:#fbe8d3; --navy:#152742; --navy-dim:#e2e8f0;
+  --emerald:#0e7a5e; --emerald-dim:#d6efe7; --gold:#b9821a; --rose:#b8324f;
+  --shadow:0 1px 2px rgba(20,15,10,.05), 0 8px 24px -12px rgba(20,15,10,.18);
+  --radius:18px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0d121c; --surface:#151d2b; --surface-2:#1c2536; --surface-3:#232e42;
+    --border:rgba(255,255,255,0.09); --text:#f3eee7; --text-dim:#98a2b3;
+    --saffron:#f0913a; --saffron-dim:#3a2a17; --navy:#cfe0f5; --navy-dim:#1b2637;
+    --emerald:#39b892; --emerald-dim:#123328; --gold:#e0a63a; --rose:#e0607c;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.7);
+  }
+}
+*{box-sizing:border-box; margin:0; padding:0}
+html,body{height:100%}
+body{
+  font-family:"Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  background:
+    radial-gradient(1100px 520px at 8% -8%, color-mix(in srgb, var(--saffron) 12%, transparent), transparent 60%),
+    radial-gradient(900px 460px at 100% 0%, color-mix(in srgb, var(--emerald) 10%, transparent), transparent 55%),
+    var(--bg);
+  color:var(--text); -webkit-font-smoothing:antialiased; line-height:1.5;
+}
+.mono{font-family:"Azeret Mono", ui-monospace, monospace}
+button{font-family:inherit; cursor:pointer; border:none; background:none; color:inherit}
+img{display:block}
+::-webkit-scrollbar{height:8px; width:8px}
+::-webkit-scrollbar-thumb{background:var(--surface-3); border-radius:8px}
+
+/* ---------- App frame ---------- */
+#app{max-width:1180px; margin:0 auto; padding:0 0 84px; min-height:100%}
+.topbar{
+  position:sticky; top:0; z-index:40; display:flex; align-items:center; gap:12px;
+  padding:12px 16px; backdrop-filter:blur(14px);
+  background:color-mix(in srgb, var(--bg) 82%, transparent);
+  border-bottom:1px solid var(--border);
+}
+.brand{display:flex; align-items:center; gap:9px; font-weight:800; font-size:19px; letter-spacing:-.02em}
+.logo{
+  width:30px; height:30px; border-radius:9px; display:grid; place-items:center;
+  background:linear-gradient(150deg,var(--saffron),var(--gold)); color:#fff; font-weight:800; font-size:15px;
+  box-shadow:0 4px 14px -6px var(--saffron);
+}
+.brand small{display:block; font-size:9px; font-weight:600; letter-spacing:.14em; color:var(--text-dim); text-transform:uppercase; margin-top:-3px}
+.search{
+  flex:1; display:flex; align-items:center; gap:8px; min-width:0;
+  background:var(--surface); border:1px solid var(--border); border-radius:999px; padding:9px 14px;
+}
+.search input{border:none; outline:none; background:none; color:var(--text); width:100%; font-size:14px}
+.search svg{flex:none; opacity:.5}
+.pill{
+  display:inline-flex; align-items:center; gap:6px; padding:7px 12px; border-radius:999px;
+  background:var(--surface); border:1px solid var(--border); font-size:12.5px; font-weight:600; white-space:nowrap;
+}
+.pill.acc{background:var(--saffron-dim); border-color:transparent; color:var(--saffron)}
+.pill.money{background:var(--emerald-dim); border-color:transparent; color:var(--emerald)}
+
+/* ---------- Screens ---------- */
+.screen{display:none; padding:18px 16px 8px; animation:fade .35s ease}
+.screen.on{display:block}
+@keyframes fade{from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none}}
+.h1{font-size:23px; font-weight:800; letter-spacing:-.025em; margin-bottom:2px}
+.sub{color:var(--text-dim); font-size:13.5px; margin-bottom:16px}
+.sec-label{
+  font-family:"Azeret Mono", monospace; font-size:10.5px; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--text-dim); display:flex; align-items:center; gap:8px; margin:22px 0 12px;
+}
+.sec-label::before{content:""; width:7px; height:7px; border-radius:50%; background:var(--saffron)}
+.sec-label.em::before{background:var(--emerald)}
+.sec-label.nv::before{background:var(--navy)}
+
+.tabs{display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:14px; scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{
+  flex:none; padding:8px 15px; border-radius:999px; font-size:13px; font-weight:600; white-space:nowrap;
+  background:var(--surface); border:1px solid var(--border); color:var(--text-dim); transition:.18s;
+}
+.tab.on{background:var(--text); color:var(--bg); border-color:transparent}
+
+/* ---------- Cards / grid ---------- */
+.grid{display:grid; gap:16px; grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.card{
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  overflow:hidden; box-shadow:var(--shadow); transition:transform .2s, box-shadow .2s; cursor:pointer;
+}
+.card:hover{transform:translateY(-3px)}
+.card:focus-visible{outline:2px solid var(--saffron); outline-offset:2px}
+.thumb{position:relative; aspect-ratio:16/9; display:grid; place-items:center; color:#fff; font-weight:800; font-size:30px; letter-spacing:-.03em; overflow:hidden}
+.thumb .badges{position:absolute; top:9px; left:9px; display:flex; gap:6px; flex-wrap:wrap}
+.thumb .dur{position:absolute; bottom:9px; right:9px; background:rgba(0,0,0,.72); color:#fff; font-size:11px; font-weight:600; padding:3px 7px; border-radius:6px; font-family:"Azeret Mono",monospace}
+.badge{font-size:10.5px; font-weight:700; padding:3px 8px; border-radius:999px; background:rgba(0,0,0,.55); color:#fff; backdrop-filter:blur(4px); letter-spacing:.01em}
+.badge.live{background:#c62828}
+.badge.dub{background:var(--saffron); color:#fff}
+.card-body{padding:12px 13px 14px}
+.card-title{font-size:14.5px; font-weight:700; line-height:1.35; letter-spacing:-.01em; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+.meta{display:flex; align-items:center; gap:8px; margin-top:9px; font-size:12px; color:var(--text-dim)}
+.avatar{width:26px; height:26px; border-radius:50%; display:grid; place-items:center; color:#fff; font-weight:700; font-size:11px; flex:none}
+.earn{margin-top:9px; display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:700; color:var(--emerald); background:var(--emerald-dim); padding:4px 9px; border-radius:999px}
+
+/* ---------- Watch ---------- */
+.watch{position:fixed; inset:0; z-index:60; background:var(--bg); overflow-y:auto; display:none}
+.watch.on{display:block; animation:fade .3s ease}
+.watch-inner{max-width:960px; margin:0 auto; padding:0 0 60px}
+.player{
+  aspect-ratio:16/9; width:100%; display:grid; place-items:center; color:#fff; position:relative;
+  background:#000;
+}
+.player .big{font-size:clamp(30px,7vw,64px); font-weight:800; letter-spacing:-.04em; opacity:.96}
+.player .controls{position:absolute; bottom:0; left:0; right:0; padding:14px 16px; display:flex; align-items:center; gap:12px; background:linear-gradient(transparent,rgba(0,0,0,.65))}
+.bar{flex:1; height:5px; border-radius:9px; background:rgba(255,255,255,.28); overflow:hidden}
+.bar i{display:block; height:100%; width:38%; background:var(--saffron); border-radius:9px}
+.back{position:absolute; top:12px; left:12px; z-index:2; width:38px; height:38px; border-radius:50%; background:rgba(0,0,0,.55); color:#fff; display:grid; place-items:center; font-size:19px; backdrop-filter:blur(6px)}
+.watch-body{padding:16px}
+.watch-title{font-size:19px; font-weight:800; letter-spacing:-.02em; line-height:1.3}
+.row{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:12px}
+.btn{padding:9px 15px; border-radius:999px; font-weight:700; font-size:13.5px; background:var(--surface-2); border:1px solid var(--border); display:inline-flex; align-items:center; gap:7px}
+.btn.primary{background:var(--text); color:var(--bg); border-color:transparent}
+.btn.dub{background:linear-gradient(150deg,var(--saffron),var(--gold)); color:#fff; border-color:transparent}
+.btn.em{background:var(--emerald); color:#fff; border-color:transparent}
+.chips{display:flex; gap:8px; flex-wrap:wrap; margin-top:6px}
+.chip{padding:7px 13px; border-radius:999px; font-size:12.5px; font-weight:600; background:var(--surface); border:1px solid var(--border); color:var(--text-dim); transition:.16s}
+.chip.on{background:var(--saffron); color:#fff; border-color:transparent}
+.dubbanner{
+  margin-top:14px; padding:14px 16px; border-radius:14px; border:1px dashed color-mix(in srgb,var(--saffron) 55%, var(--border));
+  background:var(--saffron-dim); display:flex; gap:12px; align-items:flex-start;
+}
+.dubbanner b{color:var(--saffron)}
+.comment{display:flex; gap:10px; padding:11px 0; border-top:1px solid var(--border)}
+.comment .who{font-weight:700; font-size:12.5px}
+.comment .txt{font-size:13.5px; color:var(--text)}
+.comment .sm{font-size:11.5px; color:var(--text-dim); margin-top:3px}
+
+/* ---------- Shorts ---------- */
+.shorts{display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:14px}
+.short{position:relative; aspect-ratio:9/16; border-radius:16px; overflow:hidden; display:flex; align-items:flex-end; padding:12px; color:#fff; box-shadow:var(--shadow); cursor:pointer; border:1px solid var(--border)}
+.short .t{font-weight:700; font-size:13px; line-height:1.3; text-shadow:0 1px 8px rgba(0,0,0,.6)}
+.short .side{position:absolute; top:12px; right:12px; display:flex; flex-direction:column; gap:12px; align-items:center; font-size:11px; font-weight:700}
+.short .side span{display:grid; place-items:center; gap:2px; text-shadow:0 1px 6px rgba(0,0,0,.6)}
+
+/* ---------- Live ---------- */
+.live-wrap{display:grid; grid-template-columns:1.6fr 1fr; gap:16px}
+@media (max-width:760px){ .live-wrap{grid-template-columns:1fr} }
+.live-stage{aspect-ratio:16/9; border-radius:var(--radius); display:grid; place-items:center; color:#fff; font-weight:800; font-size:clamp(22px,4vw,34px); position:relative; overflow:hidden; background:linear-gradient(150deg,#1c3452,#0a1422); box-shadow:var(--shadow)}
+.live-dot{position:absolute; top:12px; left:12px; background:#c62828; color:#fff; font-size:11px; font-weight:800; padding:4px 10px; border-radius:999px; display:flex; align-items:center; gap:6px; letter-spacing:.05em}
+.live-dot i{width:7px; height:7px; border-radius:50%; background:#fff; animation:pulse 1.4s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+.chatbox{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); display:flex; flex-direction:column; max-height:430px}
+.chat-list{padding:12px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:9px}
+.msg{font-size:13px}
+.msg b{font-weight:700}
+.msg .m{color:var(--text-dim); font-size:12.5px}
+.poll{background:var(--surface-2); border-radius:14px; padding:13px; margin:10px 12px}
+.poll .opt{display:flex; justify-content:space-between; font-size:13px; padding:8px 11px; border-radius:10px; background:var(--surface); margin-top:7px; border:1px solid var(--border); position:relative; overflow:hidden; cursor:pointer}
+.poll .opt i{position:absolute; inset:0; background:var(--emerald-dim); z-index:0}
+.poll .opt span{position:relative; z-index:1; font-weight:600}
+.simulcast{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:12px}
+.sim-chip{padding:6px 12px; border-radius:999px; font-size:12px; font-weight:600; border:1px solid var(--border); background:var(--surface); color:var(--text-dim)}
+.sim-chip.on{background:var(--navy); color:var(--bg); border-color:transparent}
+.toggle{width:46px; height:26px; border-radius:999px; background:var(--surface-3); position:relative; transition:.2s; flex:none}
+.toggle.on{background:var(--emerald)}
+.toggle i{position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:#fff; transition:.2s}
+.toggle.on i{left:23px}
+
+/* ---------- Studio ---------- */
+.kpis{display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.kpi{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow)}
+.kpi .k{font-size:11px; font-family:"Azeret Mono",monospace; letter-spacing:.1em; text-transform:uppercase; color:var(--text-dim)}
+.kpi .v{font-size:27px; font-weight:800; letter-spacing:-.03em; margin-top:6px}
+.kpi .d{font-size:12px; font-weight:600; color:var(--emerald); margin-top:4px}
+.kpi.hero{background:linear-gradient(160deg, var(--emerald-dim), transparent); border-color:color-mix(in srgb,var(--emerald) 35%, var(--border))}
+table{width:100%; border-collapse:collapse; font-size:13px}
+th{text-align:left; font-size:10.5px; font-family:"Azeret Mono",monospace; letter-spacing:.09em; text-transform:uppercase; color:var(--text-dim); padding:9px 10px; border-bottom:1px solid var(--border); font-weight:600}
+td{padding:11px 10px; border-bottom:1px solid var(--border)}
+tr:last-child td{border-bottom:none}
+td.num{text-align:right; font-variant-numeric:tabular-nums; font-weight:700}
+.tablewrap{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow-x:auto; box-shadow:var(--shadow)}
+.tablewrap td, .tablewrap th{white-space:nowrap}
+.status{font-size:11px; font-weight:700; padding:3px 9px; border-radius:999px; background:var(--emerald-dim); color:var(--emerald)}
+.tools{display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.tool{background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:15px; text-align:left; transition:.18s; box-shadow:var(--shadow)}
+.tool:hover{transform:translateY(-2px)}
+.tool .ti{font-weight:700; font-size:14px; margin-bottom:4px}
+.tool .td{font-size:12.5px; color:var(--text-dim)}
+.upload{border:1.5px dashed var(--border); border-radius:var(--radius); padding:26px; text-align:center; background:var(--surface); margin-bottom:16px}
+
+/* ---------- Clubs ---------- */
+.tiers{display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.tier{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow); position:relative}
+.tier.best{border-color:color-mix(in srgb,var(--saffron) 55%, var(--border)); box-shadow:0 0 0 1px color-mix(in srgb,var(--saffron) 40%, transparent), var(--shadow)}
+.tier .tn{font-weight:800; font-size:16px}
+.tier .tp{font-size:26px; font-weight:800; letter-spacing:-.03em; margin:8px 0 12px}
+.tier .tp small{font-size:12.5px; font-weight:600; color:var(--text-dim)}
+.tier ul{list-style:none; display:flex; flex-direction:column; gap:8px; font-size:13px; margin-bottom:16px}
+.tier li{display:flex; gap:8px; align-items:flex-start; color:var(--text)}
+.tier li::before{content:"✓"; color:var(--emerald); font-weight:800; flex:none}
+.ribbon{position:absolute; top:-11px; right:14px; background:var(--saffron); color:#fff; font-size:10.5px; font-weight:800; padding:4px 11px; border-radius:999px; letter-spacing:.05em}
+.parties{display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.party{display:flex; gap:12px; align-items:center; background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:13px; box-shadow:var(--shadow)}
+
+/* ---------- Nav ---------- */
+.nav{
+  position:fixed; bottom:0; left:0; right:0; z-index:45; display:flex; justify-content:center; gap:4px;
+  padding:8px 10px calc(8px + env(safe-area-inset-bottom)); background:color-mix(in srgb,var(--bg) 88%, transparent);
+  backdrop-filter:blur(16px); border-top:1px solid var(--border);
+}
+.nav button{
+  flex:1; max-width:130px; display:flex; flex-direction:column; align-items:center; gap:3px;
+  font-size:10.5px; font-weight:600; color:var(--text-dim); padding:6px 2px; border-radius:12px; transition:.16s;
+}
+.nav button svg{width:22px; height:22px}
+.nav button.on{color:var(--saffron)}
+.nav button.on svg{transform:translateY(-1px)}
+
+/* ---------- Onboarding ---------- */
+#onboard{position:fixed; inset:0; z-index:100; display:grid; place-items:center; padding:22px;
+  background:radial-gradient(900px 520px at 50% -10%, color-mix(in srgb,var(--saffron) 22%, transparent), transparent 60%), var(--bg)}
+#onboard.hide{display:none}
+.ob-card{max-width:520px; width:100%; background:var(--surface); border:1px solid var(--border); border-radius:24px; padding:30px; box-shadow:var(--shadow); text-align:center}
+.ob-card .logo{width:52px; height:52px; font-size:24px; margin:0 auto 16px; border-radius:15px}
+.ob-card h1{font-size:26px; font-weight:800; letter-spacing:-.03em}
+.ob-card p{color:var(--text-dim); font-size:14px; margin:8px 0 22px}
+.langgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px; margin-bottom:20px}
+.langbtn{padding:12px; border-radius:13px; border:1px solid var(--border); background:var(--surface-2); font-weight:700; font-size:14px; transition:.16s; text-align:left}
+.langbtn small{display:block; font-weight:500; font-size:11px; color:var(--text-dim)}
+.langbtn.on{background:var(--saffron); color:#fff; border-color:transparent}
+.langbtn.on small{color:rgba(255,255,255,.85)}
+.hooks{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:22px}
+.hook{font-size:11.5px; font-weight:700; padding:6px 12px; border-radius:999px; background:var(--surface-2); border:1px solid var(--border)}
+.wide{width:100%; padding:14px; font-size:15px; justify-content:center}
+
+/* ---------- Toast ---------- */
+#toast{position:fixed; bottom:96px; left:50%; transform:translateX(-50%) translateY(20px); z-index:200;
+  background:var(--text); color:var(--bg); padding:12px 20px; border-radius:999px; font-size:13.5px; font-weight:700;
+  opacity:0; pointer-events:none; transition:.3s; box-shadow:0 12px 30px -8px rgba(0,0,0,.5); max-width:90vw; text-align:center}
+#toast.on{opacity:1; transform:translateX(-50%) translateY(0)}
+.foot{margin-top:30px; padding:16px; text-align:center; font-size:11.5px; color:var(--text-dim); border-top:1px solid var(--border)}
+.sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+
+<!-- ============ ONBOARDING ============ -->
+<div id="onboard">
+  <div class="ob-card">
+    <div class="logo">गूं</div>
+    <h1>Goonj</h1>
+    <p>Your voice, in every Indian language. An India-first creator platform — video, shorts, live and fan clubs in one place.</p>
+    <div class="hooks">
+      <span class="hook">AI dubbing in your own voice</span>
+      <span class="hook">Earn from video #1 · daily UPI</span>
+      <span class="hook">90% creator split</span>
+      <span class="hook">Regional-first discovery</span>
+    </div>
+    <div class="mono" style="font-size:10.5px;letter-spacing:.14em;color:var(--text-dim);text-transform:uppercase;margin-bottom:10px">Choose your content language</div>
+    <div class="langgrid" id="obLangs"></div>
+    <button class="btn primary wide" onclick="finishOnboard()">Enter Goonj →</button>
+    <div style="font-size:11px;color:var(--text-dim);margin-top:14px">Prototype — all data is illustrative</div>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">गूं</div>
+      <div>Goonj<small data-i18n="tagline">Creator First</small></div>
+    </div>
+    <div class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="searchInput" data-i18n-ph="search" placeholder="Search creators, languages, districts…" aria-label="Search">
+    </div>
+    <button class="pill acc" id="langPill" onclick="toggleUILang()" title="Switch UI language">EN</button>
+    <button class="pill money" onclick="go('wallet')" title="Wallet">₹</button>
+  </header>
+
+  <main>
+    <!-- HOME -->
+    <section class="screen on" id="s-home">
+      <div class="h1" data-i18n="homeTitle">Your district, your language</div>
+      <div class="sub" id="homeSub">Regional-first discovery — content that speaks your language.</div>
+      <div class="tabs" id="feedTabs"></div>
+      <div class="grid" id="feed"></div>
+    </section>
+
+    <!-- SHORTS -->
+    <section class="screen" id="s-shorts">
+      <div class="h1" data-i18n="shortsTitle">Shorts</div>
+      <div class="sub" data-i18n="shortsSub">Vertical, snackable, in every language.</div>
+      <div class="sec-label em" data-i18n="clipFactory">AI Clip Factory</div>
+      <div class="card" style="padding:16px; margin-bottom:18px; cursor:default">
+        <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;justify-content:space-between">
+          <div>
+            <div style="font-weight:800;font-size:15px">One stream → 10 ready shorts</div>
+            <div style="font-size:13px;color:var(--text-dim)">Drop a 60-min live. We cut the best moments, add captions, and schedule them.</div>
+          </div>
+          <button class="btn dub" onclick="runClipFactory()">⚡ Generate shorts</button>
+        </div>
+        <div id="cfOut" style="font-size:13px;color:var(--emerald);font-weight:700;margin-top:12px"></div>
+      </div>
+      <div class="shorts" id="shortsGrid"></div>
+    </section>
+
+    <!-- LIVE -->
+    <section class="screen" id="s-live">
+      <div class="h1" data-i18n="liveTitle">Live</div>
+      <div class="sub" data-i18n="liveSub">Zero-delay chat, interactive polls, and one-tap multistream.</div>
+      <div class="live-wrap">
+        <div>
+          <div class="live-stage" id="liveStage">
+            <span class="live-dot"><i></i>LIVE</span>
+            <div style="text-align:center">
+              <div>PUBG Scrim Finals · टीम इंडिया</div>
+              <div class="mono" style="font-size:12px;opacity:.85;margin-top:8px">14,208 watching · Telugu + Hindi</div>
+            </div>
+          </div>
+          <div class="simulcast">
+            <span style="font-size:12.5px;font-weight:700">Simulcast:</span>
+            <span class="sim-chip on">Goonj</span>
+            <span class="sim-chip" id="scYt">YouTube</span>
+            <span class="sim-chip" id="scIg">Instagram</span>
+            <span class="sim-chip" id="scTw">Twitch</span>
+            <button class="toggle on" id="simToggle" onclick="toggleSimulcast()" aria-label="Toggle simulcast"><i></i></button>
+          </div>
+          <div style="font-size:12.5px;color:var(--text-dim);margin-top:10px">Creator keeps streaming everywhere else — Goonj becomes the control room, not a walled garden.</div>
+        </div>
+        <div class="chatbox">
+          <div class="chat-list" id="chatList"></div>
+          <div class="poll">
+            <div style="font-size:12.5px;font-weight:700;margin-bottom:4px">📊 Poll — Who wins this round?</div>
+            <div class="opt" onclick="vote(this,68)"><i style="width:68%"></i><span>Team Alpha</span><span>68%</span></div>
+            <div class="opt" onclick="vote(this,32)"><i style="width:32%"></i><span>Team Omega</span><span>32%</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STUDIO -->
+    <section class="screen" id="s-studio">
+      <div class="h1" data-i18n="studioTitle">Creator Studio</div>
+      <div class="sub" data-i18n="studioSub">Upload, earn, and grow — with AI doing the heavy lifting.</div>
+      <div class="upload">
+        <div style="font-weight:800;font-size:15px" data-i18n="uploadTitle">Drop a video to publish</div>
+        <div style="font-size:13px;color:var(--text-dim);margin:4px 0 14px" data-i18n="uploadSub">Auto-dubbed into 22 Indian languages, in your own voice.</div>
+        <button class="btn primary" onclick="toast('Upload started — auto-dubbing queued in 8 languages')">Choose file</button>
+      </div>
+      <div class="kpis">
+        <div class="kpi hero">
+          <div class="k">This month's earnings</div>
+          <div class="v">₹84,320</div>
+          <div class="d">↑ 41% vs last month</div>
+        </div>
+        <div class="kpi"><div class="k">Creator share</div><div class="v">90%</div><div class="d">You keep the rest, always</div></div>
+        <div class="kpi"><div class="k">Paid out today</div><div class="v">₹2,940</div><div class="d">Straight to UPI</div></div>
+        <div class="kpi"><div class="k">Watch hours</div><div class="v">126k</div><div class="d">No 4,000-hour gate</div></div>
+      </div>
+      <div class="sec-label em" data-i18n="payouts">Daily UPI payouts</div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Date</th><th>Source</th><th>UPI ID</th><th style="text-align:right">Amount</th><th>Status</th></tr></thead>
+          <tbody id="payoutBody"></tbody>
+        </table>
+      </div>
+      <div class="sec-label nv" data-i18n="aiTools">AI tools for creators</div>
+      <div class="tools">
+        <button class="tool" onclick="toast('Thumbnail + title + SEO generated — A/B test queued')"><div class="ti">Thumbnail &amp; SEO AI</div><div class="td">Generates thumbnail, title, tags and an A/B test in one tap.</div></button>
+        <button class="tool" onclick="toast('Live chat auto-moderation active in 6 languages')"><div class="ti">Multilingual moderation</div><div class="td">Filters abuse and spam in Indian languages, in real time.</div></button>
+        <button class="tool" onclick="toast('Brand-deal matches found: 4 relevant to your niche')"><div class="ti">Brand-deal matcher</div><div class="td">AI pairs you with brands that fit your audience.</div></button>
+        <button class="tool" onclick="toast('Voice-dub studio opened — 22 languages ready')"><div class="ti">Voice-dub studio</div><div class="td">Dub any video into 22 languages in your own voice.</div></button>
+      </div>
+    </section>
+
+    <!-- CLUBS -->
+    <section class="screen" id="s-clubs">
+      <div class="h1" data-i18n="clubsTitle">Fan Clubs</div>
+      <div class="sub" data-i18n="clubsSub">Turn your biggest fans into a steady income — and a real community.</div>
+      <div class="sec-label" data-i18n="tiers">Membership tiers</div>
+      <div class="tiers" id="tiers"></div>
+      <div class="sec-label em" data-i18n="parties">Watch parties &amp; community</div>
+      <div class="parties" id="parties"></div>
+    </section>
+
+    <!-- WALLET -->
+    <section class="screen" id="s-wallet">
+      <div class="h1" data-i18n="walletTitle">Wallet</div>
+      <div class="sub" data-i18n="walletSub">Your earnings, live — withdraw to UPI any time.</div>
+      <div class="kpi hero" style="margin-bottom:16px">
+        <div class="k">Available balance</div>
+        <div class="v">₹18,764</div>
+        <div class="d">Next auto-payout: tomorrow, 6:00 AM IST</div>
+        <button class="btn em" style="margin-top:14px" onclick="toast('₹18,764 sent to your UPI — check your bank app')">Withdraw to UPI now</button>
+      </div>
+      <div class="sec-label nv" data-i18n="txns">Recent transactions</div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Date</th><th>Detail</th><th>Ref</th><th style="text-align:right">Amount</th></tr></thead>
+          <tbody id="txnBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    Goonj — working prototype. A next-generation video ecosystem, not a clone. <span class="mono">v0.1</span>
+  </footer>
+</div>
+
+<!-- ============ NAV ============ -->
+<nav class="nav" id="nav"></nav>
+
+<!-- ============ WATCH OVERLAY ============ -->
+<div class="watch" id="watch">
+  <div class="watch-inner">
+    <div class="player" id="player">
+      <button class="back" onclick="closeWatch()" aria-label="Back">←</button>
+      <div class="big" id="playerTitle"></div>
+      <div class="controls">
+        <span class="mono" style="font-size:12px">▶</span>
+        <div class="bar"><i></i></div>
+        <span class="mono" style="font-size:12px">12:04 / 31:20</span>
+      </div>
+    </div>
+    <div class="watch-body">
+      <div class="watch-title" id="wTitle"></div>
+      <div class="row" id="wChannel"></div>
+      <div class="row">
+        <button class="btn primary" onclick="toast('Subscribed — you\'ll get every new video')">Subscribe</button>
+        <button class="btn" onclick="toast('Liked')">👍 Like</button>
+        <button class="btn" onclick="toast('Saved to Watch Later')">＋ Save</button>
+        <button class="btn em" onclick="toast('Tip sent ₹50 via UPI')">₹ Tip</button>
+      </div>
+
+      <div class="sec-label" style="margin-top:22px">AI Dubbing — in the creator's own voice</div>
+      <div class="chips" id="dubChips"></div>
+      <div class="dubbanner" id="dubBanner">
+        <div style="font-size:20px">🎙️</div>
+        <div>
+          <div style="font-weight:800;font-size:13.5px">Original audio</div>
+          <div style="font-size:12.5px;color:var(--text-dim)" id="dubText">Tap a language to hear this video dubbed in the creator's own voice. YouTube doesn't do this.</div>
+        </div>
+      </div>
+
+      <div class="sec-label em" style="margin-top:22px">Comments</div>
+      <div id="comments"></div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ============================================================
+   Goonj prototype — vanilla JS, no build step.
+   ============================================================ */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+
+/* ---------- i18n (UI chrome: English + Hindi) ---------- */
+const I18N = {
+  en:{
+    tagline:"Creator First", homeTitle:"Your district, your language",
+    homeSub:"Regional-first discovery — content that speaks your language.",
+    shortsTitle:"Shorts", shortsSub:"Vertical, snackable, in every language.",
+    clipFactory:"AI Clip Factory", liveTitle:"Live",
+    liveSub:"Zero-delay chat, interactive polls, and one-tap multistream.",
+    studioTitle:"Creator Studio", studioSub:"Upload, earn, and grow — with AI doing the heavy lifting.",
+    uploadTitle:"Drop a video to publish", uploadSub:"Auto-dubbed into 22 Indian languages, in your own voice.",
+    payouts:"Daily UPI payouts", aiTools:"AI tools for creators",
+    clubsTitle:"Fan Clubs", clubsSub:"Turn your biggest fans into a steady income — and a real community.",
+    tiers:"Membership tiers", parties:"Watch parties & community",
+    walletTitle:"Wallet", walletSub:"Your earnings, live — withdraw to UPI any time.",
+    txns:"Recent transactions", search:"Search creators, languages, districts…",
+    tabs:{foryou:"For You", live:"Live", shorts:"Shorts", subs:"Subscriptions", local:"Your District"}
+  },
+  hi:{
+    tagline:"क्रिएटर फर्स्ट", homeTitle:"आपका ज़िला, आपकी भाषा",
+    homeSub:"क्षेत्रीय-प्राथमिकता खोज — आपकी भाषा में सामग्री।",
+    shortsTitle:"शॉर्ट्स", shortsSub:"वर्टिकल, छोटे, हर भाषा में।",
+    clipFactory:"AI क्लिप फैक्ट्री", liveTitle:"लाइव",
+    liveSub:"बिना देरी चैट, इंटरैक्टिव पोल और एक-टैप मल्टीस्ट्रीम।",
+    studioTitle:"क्रिएटर स्टूडियो", studioSub:"अपलोड, कमाई और ग्रोथ — AI के साथ।",
+    uploadTitle:"पब्लिश करने के लिए वीडियो डालें", uploadSub:"आपकी ही आवाज़ में 22 भारतीय भाषाओं में ऑटो-डब।",
+    payouts:"रोज़ाना UPI पेआउट", aiTools:"क्रिएटर्स के लिए AI टूल्स",
+    clubsTitle:"फैन क्लब", clubsSub:"अपने बड़े फैंस को स्थायी कमाई और समुदाय में बदलें।",
+    tiers:"मेंबरशिप टियर", parties:"वॉच पार्टी और समुदाय",
+    walletTitle:"वॉलेट", walletSub:"आपकी कमाई, लाइव — कभी भी UPI में निकालें।",
+    txns:"हाल के ट्रांज़ैक्शन", search:"क्रिएटर, भाषा, ज़िला खोजें…",
+    tabs:{foryou:"आपके लिए", live:"लाइव", shorts:"शॉर्ट्स", subs:"सब्सक्रिप्शन", local:"आपका ज़िला"}
+  }
+};
+
+/* ---------- Content languages ---------- */
+const LANGS = [
+  {code:"hi", name:"हिन्दी",    en:"Hindi"},
+  {code:"ta", name:"தமிழ்",    en:"Tamil"},
+  {code:"bn", name:"বাংলা",    en:"Bengali"},
+  {code:"te", name:"తెలుగు",    en:"Telugu"},
+  {code:"mr", name:"मराठी",    en:"Marathi"},
+  {code:"pa", name:"ਪੰਜਾਬੀ",   en:"Punjabi"},
+  {code:"kn", name:"ಕನ್ನಡ",    en:"Kannada"},
+  {code:"bho",name:"भोजपुरी",  en:"Bhojpuri"}
+];
+const langName = c => (LANGS.find(l=>l.code===c)||{}).en || c;
+
+/* ---------- Mock data ---------- */
+const creators = [
+  {id:"c1", name:"Meera Cooks",      lang:"hi",  region:"Delhi",     color:"#dd7a1a", initial:"M"},
+  {id:"c2", name:"Tamil Tech Thambi",lang:"ta",  region:"Chennai",   color:"#0e7a5e", initial:"T"},
+  {id:"c3", name:"Bengal Beats",     lang:"bn",  region:"Kolkata",   color:"#b8324f", initial:"B"},
+  {id:"c4", name:"Telugu Gamer",     lang:"te",  region:"Hyderabad", color:"#152742", initial:"G"},
+  {id:"c5", name:"Rangoli Rani",     lang:"mr",  region:"Pune",      color:"#b9821a", initial:"R"},
+  {id:"c6", name:"Punjabi Pind",     lang:"pa",  region:"Amritsar",  color:"#7a5c1a", initial:"P"},
+  {id:"c7", name:"Kannada Katha",    lang:"kn",  region:"Bengaluru", color:"#2b5f8a", initial:"K"},
+  {id:"c8", name:"Bhojpuri Bhaijaan",lang:"bho", region:"Patna",     color:"#8a4a1f", initial:"B"}
+];
+const byId = id => creators.find(c=>c.id===id);
+
+const videos = [
+  {id:"v1", c:"c1", t:"सिर्फ़ 10 मिनट में राजमा चावल — ढाबा स्टाइल", lang:"hi",  views:"2.1M", dur:"12:04", earn:"₹14,200", kind:"video"},
+  {id:"v2", c:"c2", t:"₹15,000-க்கு சிறந்த 5 ஸ்மார்ட்போன் | 2026", lang:"ta", views:"860K", dur:"18:22", earn:"₹9,100", kind:"video"},
+  {id:"v3", c:"c4", t:"BGMI కొత్త అప్డేట్ — 20 కిల్స్ గేమ్‌ప్లే", lang:"te", views:"1.4M", dur:"LIVE", earn:"₹22,500", kind:"live"},
+  {id:"v4", c:"c3", t:"কলকাতার সেরা ১০টি রেস্টুরেন্ট — ফুড ট্যুর", lang:"bn", views:"540K", dur:"24:10", earn:"₹6,400", kind:"video"},
+  {id:"v5", c:"c5", t:"पुण्यातील पावभाजीची खरी रेसिपी", lang:"mr", views:"720K", dur:"09:48", earn:"₹7,800", kind:"video"},
+  {id:"v6", c:"c8", t:"भोजपुरी गाना — नया हिट 2026", lang:"bho", views:"3.2M", dur:"03:55", earn:"₹18,900", kind:"shorts"},
+  {id:"v7", c:"c6", t:"ਪਿੰਡ ਦੀ ਸਵੇਰ — ਵਲੋਗ #42", lang:"pa", views:"410K", dur:"16:30", earn:"₹5,200", kind:"video"},
+  {id:"v8", c:"c7", t:"ಕನ್ನಡ ಸಾಹಿತ್ಯ ಪರಿಚಯ — ಭಾಗ ೧", lang:"kn", views:"230K", dur:"21:05", earn:"₹3,900", kind:"video"}
+];
+
+const shortsData = [
+  {t:"चटपटा पानी पूरी ट्रिक 🤫", c:"c1", views:"1.2M"},
+  {t:"கேமிங் கிளட்ச் மொமன்ட் 🔥", c:"c4", views:"890K"},
+  {t:"পুজোর শেষ মুহূর্ত 🎆", c:"c3", views:"1.5M"},
+  {t:"ਭੰਗੜਾ ਸਟੈਪ ਟਿਊਟੋਰਿਅਲ", c:"c6", views:"640K"},
+  {t:"ಟಿಫಿನ್ ರೆಸಿಪಿ — 1 ನಿಮಿಷ", c:"c7", views:"410K"},
+  {t:"भोजपुरी कॉमेडी 😂", c:"c8", views:"2.0M"}
+];
+
+const payouts = [
+  ["18 Oct 2026","Ad revenue (Oct)","meera@okaxis","₹2,940","Paid"],
+  ["17 Oct 2026","Fan club (Silver × 41)","meera@okaxis","₹4,100","Paid"],
+  ["16 Oct 2026","Ad revenue (Oct)","meera@okaxis","₹2,610","Paid"],
+  ["15 Oct 2026","Super Thanks","meera@okaxis","₹1,880","Paid"],
+  ["14 Oct 2026","Ad revenue (Oct)","meera@okaxis","₹3,240","Paid"]
+];
+const txns = [
+  ["18 Oct 2026","Daily payout","UPI/4429183","₹2,940"],
+  ["18 Oct 2026","Membership — Silver ×3","UPI/4428810","+₹300"],
+  ["17 Oct 2026","Fan tip — Rohan","UPI/4427002","+₹50"],
+  ["16 Oct 2026","Daily payout","UPI/4425331","₹2,610"],
+  ["15 Oct 2026","Brand deal — masala brand","UPI/4424109","+₹12,000"]
+];
+const commentsData = [
+  ["Sunita Devi","स्वाद बहुत बढ़िया! आज ही बनाया 🍲","2 hours ago"],
+  ["Karthik R","Tamil-la panna super ah irundhuchu 👏","5 hours ago"],
+  ["Priya B","অসাধারণ! আরও এরকম রেসিপি চাই","1 day ago"]
+];
+
+/* ---------- State ---------- */
+const state = { uiLang:"en", contentLang:"hi", screen:"home", tab:"foryou", dubLang:null };
+
+/* ---------- i18n apply ---------- */
+function applyI18N(){
+  const t = I18N[state.uiLang];
+  $$("[data-i18n]").forEach(el=>{ const k=el.dataset.i18n; if(t[k]) el.textContent=t[k]; });
+  $$("[data-i18n-ph]").forEach(el=>{ const k=el.dataset.i18nPh; if(t[k]) el.placeholder=t[k]; });
+  $("#langPill").textContent = state.uiLang==="en" ? "EN" : "हिं";
+  renderNav(); renderTabs();
+  $("#homeSub").textContent = t.homeSub + " · " + langName(state.contentLang);
+}
+function toggleUILang(){ state.uiLang = state.uiLang==="en"?"hi":"en"; applyI18N(); renderAll(); toast(state.uiLang==="hi"?"UI भाषा: हिन्दी":"UI language: English"); }
+
+/* ---------- Navigation ---------- */
+const NAV = [
+  {id:"home",   label:"Home",   i:'<path d="M3 11 12 4l9 7"/><path d="M5 10v9h14v-9"/>'},
+  {id:"shorts", label:"Shorts", i:'<rect x="7" y="3" width="10" height="18" rx="3"/><path d="m11 9 4 3-4 3z"/>'},
+  {id:"live",   label:"Live",   i:'<circle cx="12" cy="12" r="3"/><path d="M6.5 6.5a8 8 0 0 0 0 11M17.5 6.5a8 8 0 0 1 0 11"/>'},
+  {id:"clubs",  label:"Clubs",  i:'<circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 6a3 3 0 0 1 0 6"/>'},
+  {id:"studio", label:"Studio", i:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M8 5v5"/>'}
+];
+function renderNav(){
+  const t = I18N[state.uiLang];
+  $("#nav").innerHTML = NAV.map(n=>{
+    const label = state.screen===n.id ? (I18N[state.uiLang].tabs[n.id]||n.label) : n.label;
+    return `<button class="${state.screen===n.id?'on':''}" onclick="go('${n.id}')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${n.i}</svg>
+      <span>${label}</span></button>`;
+  }).join("");
+}
+function go(screen){
+  state.screen = screen;
+  $$(".screen").forEach(s=>s.classList.remove("on"));
+  const el = $("#s-"+screen); if(el) el.classList.add("on");
+  renderNav(); window.scrollTo({top:0,behavior:"smooth"});
+}
+
+/* ---------- Home feed ---------- */
+function renderTabs(){
+  const t = I18N[state.uiLang];
+  const tabs = ["foryou","live","shorts","subs","local"];
+  $("#feedTabs").innerHTML = tabs.map(k=>`<button class="tab ${state.tab===k?'on':''}" onclick="setTab('${k}')">${t.tabs[k]}</button>`).join("");
+}
+function setTab(k){ state.tab=k; renderTabs(); renderFeed(); }
+function feedItems(){
+  let list = videos.slice();
+  if(state.tab==="live")   list = list.filter(v=>v.kind==="live").concat(videos.filter(v=>v.kind!=="live"));
+  if(state.tab==="shorts") list = list.filter(v=>v.kind==="shorts").concat(videos.filter(v=>v.kind!=="shorts"));
+  if(state.tab==="local")  list = list.filter(v=>byId(v.c).region==="Delhi"||v.lang===state.contentLang).concat(list);
+  // content-language first
+  list.sort((a,b)=> (b.lang===state.contentLang) - (a.lang===state.contentLang));
+  return list.slice(0,8);
+}
+function renderFeed(){
+  $("#feed").innerHTML = feedItems().map(v=>{
+    const c = byId(v.c);
+    const kind = v.kind==="live" ? '<span class="badge live">● LIVE</span>'
+              : v.kind==="shorts" ? '<span class="badge">SHORT</span>' : '';
+    return `<article class="card" tabindex="0" onclick="openWatch('${v.id}')">
+      <div class="thumb" style="background:linear-gradient(150deg,${c.color}, ${shade(c.color)})">
+        <div class="badges">${kind}<span class="badge dub">${langName(v.lang)}</span></div>
+        <span>${c.initial}</span>
+        <span class="dur">${v.dur}</span>
+      </div>
+      <div class="card-body">
+        <div class="card-title">${v.t}</div>
+        <div class="meta"><span class="avatar" style="background:${c.color}">${c.initial}</span>
+          <div><div style="font-weight:700;color:var(--text);font-size:12.5px">${c.name}</div>
+          <div>${c.region} · ${v.views} views</div></div></div>
+        <span class="earn">₹ {earned} from video #1</span>
+      </div></article>`.replace("{earned}", v.earn);
+  }).join("");
+}
+function shade(hex){ // darken
+  const n=parseInt(hex.slice(1),16), r=(n>>16)&255,g=(n>>8)&255,b=n&255;
+  const f=0.55; return `rgb(${Math.round(r*f)},${Math.round(g*f)},${Math.round(b*f)})`;
+}
+
+/* ---------- Shorts ---------- */
+function renderShorts(){
+  $("#shortsGrid").innerHTML = shortsData.map(s=>{
+    const c = byId(s.c);
+    return `<div class="short" style="background:linear-gradient(160deg,${c.color},${shade(c.color)})" onclick="toast('Playing short…')">
+      <div class="side"><span>♥<br>${s.views}</span><span>💬<br>1.2k</span><span>↗</span></div>
+      <div class="t">${s.t}<div style="font-size:11px;font-weight:600;opacity:.85;margin-top:4px">${c.name} · ${langName(c.lang)}</div></div>
+    </div>`;
+  }).join("");
+}
+function runClipFactory(){
+  const out = $("#cfOut");
+  out.textContent = "Analysing stream… finding peak moments…";
+  let n = 0;
+  const iv = setInterval(()=>{
+    n++;
+    out.textContent = n<10 ? `✂️ Short ${n}/10 ready — captioned & scheduled` : "✅ 10 shorts ready — one stream, 10× content.";
+    if(n>=10) clearInterval(iv);
+  }, 220);
+}
+
+/* ---------- Live ---------- */
+const chatSeed = [
+  ["Ravi","aa gaya bhai 🔥"],["Sneha","Team Alpha FTW"],["Karthik","semma game 🔥"],
+  ["Bappa","কি দারুণ খেলা!"],["Nikhil","clutch moment!"],["Anu","poll lo vote cheyandi"]
+];
+function renderChat(){
+  $("#chatList").innerHTML = chatSeed.map(([u,m])=>
+    `<div class="msg"><b>${u}</b> <span class="m">${m}</span></div>`).join("");
+  startChat();
+}
+let chatTimer=null;
+function startChat(){
+  clearInterval(chatTimer);
+  const more = [["Deepa","wow 🔥"],["Suresh","next round kab"],["Meghna","love from Pune ❤️"],
+    ["Arjun","gg"],["Fatima","bahut badhiya"],["Vijay","subscribe kar diya"]];
+  let i=0;
+  chatTimer = setInterval(()=>{
+    const box=$("#chatList"); if(!box) return;
+    const [u,m]=more[i%more.length]; i++;
+    const d=document.createElement("div"); d.className="msg";
+    d.innerHTML=`<b>${u}</b> <span class="m">${m}</span>`;
+    box.appendChild(d); box.scrollTop=box.scrollHeight;
+    if(box.children.length>18) box.removeChild(box.firstChild);
+  }, 2200);
+}
+function vote(el,pct){ toast(`Voted — ${el.querySelector("span").textContent} (${pct}%)`); }
+function toggleSimulcast(){
+  const t=$("#simToggle"); t.classList.toggle("on");
+  const on=t.classList.contains("on");
+  ["scYt","scIg","scTw"].forEach(id=>$("#"+id).classList.toggle("on",on));
+  toast(on?"Simulcast ON — live on 4 platforms at once":"Simulcast OFF — streaming only on Goonj");
+}
+
+/* ---------- Studio ---------- */
+function renderStudio(){
+  $("#payoutBody").innerHTML = payouts.map(r=>
+    `<tr><td class="mono" style="font-size:12px">${r[0]}</td><td>${r[1]}</td>
+     <td class="mono" style="font-size:12px">${r[2]}</td>
+     <td class="num">${r[3]}</td><td><span class="status">${r[4]}</span></td></tr>`).join("");
+}
+
+/* ---------- Clubs ---------- */
+const tiers = [
+  {n:"Supporter", p:"₹49", best:false, f:["Badge next to your name","Members-only posts","Early access to videos"]},
+  {n:"Silver",    p:"₹149", best:true, f:["Everything in Supporter","Watch parties every week","Vote on what I make next","Ad-free on Goonj"]},
+  {n:"Gold",      p:"₹499", best:false, f:["Everything in Silver","Monthly 1:1 Q&A call","Your name in video credits","Signed merch drop"]}
+];
+function renderClubs(){
+  $("#tiers").innerHTML = tiers.map(t=>
+    `<div class="tier ${t.best?'best':''}">${t.best?'<div class="ribbon">MOST POPULAR</div>':''}
+      <div class="tn">${t.n}</div>
+      <div class="tp">${t.p}<small>/month</small></div>
+      <ul>${t.f.map(x=>`<li>${x}</li>`).join("")}</ul>
+      <button class="btn ${t.best?'primary':''} wide" style="justify-content:center" onclick="toast('Joined ${t.n} — ₹${t.p.replace('₹','')}/month via UPI')">Join ${t.n}</button>
+    </div>`).join("");
+  $("#parties").innerHTML = [
+    ["🎬","Watch party — “राजमा चावल Live”","Tonight 8 PM · 214 fans going"],
+    ["🏆","Fan league — monthly leaderboard","Top fan wins a shoutout"],
+    ["💬","Community posts","Share your own recipe photos"]
+  ].map(p=>`<div class="party"><div style="font-size:24px">${p[0]}</div>
+    <div><div style="font-weight:700;font-size:13.5px">${p[1]}</div>
+    <div style="font-size:12px;color:var(--text-dim)">${p[2]}</div></div></div>`).join("");
+}
+
+/* ---------- Wallet ---------- */
+function renderWallet(){
+  $("#txnBody").innerHTML = txns.map(r=>
+    `<tr><td class="mono" style="font-size:12px">${r[0]}</td><td>${r[1]}</td>
+     <td class="mono" style="font-size:12px">${r[2]}</td>
+     <td class="num" style="color:${r[3].startsWith('+')?'var(--emerald)':'var(--text)'}">${r[3]}</td></tr>`).join("");
+}
+
+/* ---------- Watch ---------- */
+function openWatch(id){
+  const v = videos.find(x=>x.id===id); if(!v) return;
+  const c = byId(v.c);
+  state.dubLang = null; state.watchCreator = c.name; state.watchOrig = langName(v.lang);
+  $("#player").style.background = `linear-gradient(150deg, ${c.color}, ${shade(c.color)})`;
+  $("#playerTitle").textContent = c.initial;
+  $("#wTitle").textContent = v.t;
+  $("#wChannel").innerHTML =
+    `<span class="avatar" style="background:${c.color};width:38px;height:38px;font-size:15px">${c.initial}</span>
+     <div><div style="font-weight:800">${c.name}</div>
+     <div style="font-size:12px;color:var(--text-dim)">${c.region} · ${langName(c.lang)} · ${v.views} views</div></div>
+     <span class="pill money" style="margin-left:auto">Earned ₹${v.earn.replace('₹','')}</span>`;
+  $("#dubChips").innerHTML = LANGS.map(l=>
+    `<button class="chip" data-code="${l.code}" onclick="dub('${l.code}','${l.en}')">${l.name}</button>`).join("");
+  $("#dubBanner").innerHTML =
+    `<div style="font-size:20px">🎙️</div><div>
+      <div style="font-weight:800;font-size:13.5px">Original audio — ${langName(v.lang)}</div>
+      <div style="font-size:12.5px;color:var(--text-dim)">Tap a language above to hear this video dubbed in ${c.name}'s own voice.</div></div>`;
+  $("#comments").innerHTML = commentsData.map(([u,m,t])=>
+    `<div class="comment"><span class="avatar" style="background:var(--surface-3);color:var(--text)">${u[0]}</span>
+      <div><div class="who">${u}</div><div class="txt">${m}</div><div class="sm">${t} · 👍 214</div></div></div>`).join("");
+  $("#watch").classList.add("on"); document.body.style.overflow="hidden";
+}
+function dub(code, name){
+  state.dubLang = code;
+  $$("#dubChips .chip").forEach(ch=>ch.classList.toggle("on", ch.dataset.code===code));
+  const who = state.watchCreator || "the creator";
+  $("#dubBanner").innerHTML =
+    `<div style="font-size:20px">✨</div><div>
+      <div style="font-weight:800;font-size:13.5px">Now playing: <span style="color:var(--saffron)">${name}</span> — dubbed in ${who}'s own voice</div>
+      <div style="font-size:12.5px;color:var(--text-dim)">Same video, same creator's voice, new language. One video now reaches the whole of India — YouTube can't do this.</div></div>`;
+  toast(`Dubbed to ${name} in ${who}'s own voice`);
+}
+function closeWatch(){ $("#watch").classList.remove("on"); document.body.style.overflow=""; }
+
+/* ---------- Toast ---------- */
+let toastT=null;
+function toast(msg){
+  const el=$("#toast"); el.textContent=msg; el.classList.add("on");
+  clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove("on"),2600);
+}
+
+/* ---------- Onboarding ---------- */
+function renderOnboardLangs(){
+  $("#obLangs").innerHTML = LANGS.map(l=>
+    `<button class="langbtn ${state.contentLang===l.code?'on':''}" onclick="pickLang('${l.code}')">${l.name}<small>${l.en}</small></button>`).join("");
+}
+function pickLang(code){ state.contentLang=code; renderOnboardLangs(); }
+function finishOnboard(){
+  $("#onboard").classList.add("hide");
+  applyI18N(); renderAll();
+  toast("Welcome to Goonj — " + langName(state.contentLang) + " content first");
+}
+
+/* ---------- Render all ---------- */
+function renderAll(){ renderFeed(); renderShorts(); renderChat(); renderStudio(); renderClubs(); renderWallet(); }
+
+/* ---------- Init ---------- */
+renderOnboardLangs();
+renderNav(); renderTabs();
+renderAll();
+document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeWatch(); });
+</script>
+</body>
+</html>
